@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 //создаю модель инпута высокого и низкого. изначально она пустая строка.
 
 const inputTaskTextHigh = ref('')
@@ -17,34 +17,16 @@ interface Task {
   priority: 'high' | 'low'
 }
 
-const tasks = ref<Task[]>([])
+const tasks = ref<Task[]>([]) //Это общий массив - где задачи и с высоким приоритетом и с низким. пока он пустой.
 
-// function addTask(): void {
-//   const textHigh = inputTaskTextHigh.value.trim()
-//   const textLow = inputTaskTextLow.value.trim()
-//   if (textHigh) {
-//     const capitalizedHighText = textHigh[0].toUpperCase()+textHigh.slice(1)
-//     tasksText.value.push({ text: capitalizedHighText, status: 'notDone', priority: 'high' })
-//     inputTaskTextHigh.value = ''
-//   }
-// if (textLow) {
-//   const capitalizedLowText = textLow[0].toUpperCase()+textLow.slice(1)
-//   tasksText.value.push({ text: capitalizedLowText, status: 'notDone', priority: 'low' })
-//   inputTaskTextLow.value = ''
-// }
-// }
-
-function addTaskHigh(): void {
-  const textHigh = inputTaskTextHigh.value.trim()
+function addTask(): void {
+  const textHigh = inputTaskTextHigh.value.trim() //константа,в которую попадает задача, введенная в инпут высокого приоритета. убрали отступы.
+  const textLow = inputTaskTextLow.value.trim() //... низкого...
   if (textHigh) {
     const capitalizedHighText = textHigh[0].toUpperCase() + textHigh.slice(1)
     tasks.value.push({ text: capitalizedHighText, status: 'notDone', priority: 'high' })
     inputTaskTextHigh.value = ''
   }
-}
-
-function addTaskLow(): void {
-  const textLow = inputTaskTextLow.value.trim()
   if (textLow) {
     const capitalizedLowText = textLow[0].toUpperCase() + textLow.slice(1)
     tasks.value.push({ text: capitalizedLowText, status: 'notDone', priority: 'low' })
@@ -63,6 +45,16 @@ function deleteTask(taskToDelete: Task): void {
     tasks.value.splice(index, 1)
   }
 }
+
+// создаю константу. в нее будут попадать задачи из массива всех задач, у которых приоритет 'high'. затем эта константа пойдет в v-for списка (ul) с задачами высокого приоритета, и с помощью цикла выводит каждую задачу в li.
+
+const highPriorityTasks = computed(() => {
+  return tasks.value.filter((task) => task.priority === 'high')
+})
+// Так же для задач с низким приоритетом.
+const lowPriorityTasks = computed(() => {
+  return tasks.value.filter((task) => task.priority === 'low')
+})
 </script>
 
 <template>
@@ -71,7 +63,7 @@ function deleteTask(taskToDelete: Task): void {
     <!-- при нажатии на + сработала функция и текст из инпута попал в массив задач, но мне нужно чтоб создался новый ли для каждой задачи.Для этого я на li вешаю директиву vi-for которая будет проходиться по каждой задачи из массива  -->
     <form
       class="form"
-      @submit.prevent="addTaskHigh"
+      @submit.prevent="addTask"
     >
       <input
         class="form__input"
@@ -91,7 +83,7 @@ function deleteTask(taskToDelete: Task): void {
     <ul class="list">
       <li
         class="list__item"
-        v-for="task in tasks.filter((task) => task.priority === 'high')"
+        v-for="task in highPriorityTasks"
         :key="task.text"
       >
         <input
@@ -113,7 +105,7 @@ function deleteTask(taskToDelete: Task): void {
     <h1 class="title">LOW</h1>
     <form
       class="form"
-      @submit.prevent="addTaskLow"
+      @submit.prevent="addTask"
     >
       <input
         class="form__input"
@@ -133,7 +125,7 @@ function deleteTask(taskToDelete: Task): void {
     <ul class="list">
       <li
         class="list__item"
-        v-for="task in tasks.filter((task) => task.priority === 'low')"
+        v-for="task in lowPriorityTasks"
         :key="task.text"
       >
         <input
